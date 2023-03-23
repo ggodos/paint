@@ -47,6 +47,7 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           # Upload dist repository
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           path: './dist'
       - name: Deploy to GitHub Pages
         id: deployment
