@@ -6,7 +6,7 @@ function App() {
 
   return (
     <div className="App">
-      Hello
+      Hello again
       <canvas id='mainCanvas'>Your browser doesn't support HTML5 Canvas</canvas>
     </div>
   )
