@@ -32,6 +32,9 @@ class Line {
   }
 }
 
+const maxScale = 1e-50;
+const minScale = 1e50;
+
 export default class Canvas {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
@@ -135,7 +138,7 @@ export default class Canvas {
     const { deltaY } = e;
     const scaleAmount = -deltaY / 500;
     const newScale = this.scale * (1 + scaleAmount);
-    if (newScale > 10 || newScale < 0.1) {
+    if (newScale < maxScale || newScale > minScale) {
       return;
     }
     this.scale = newScale;
