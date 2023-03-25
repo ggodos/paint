@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Canvas from "./canvas";
 
 function App() {
@@ -10,7 +10,7 @@ function App() {
 
   return (
     <div className="App">
-      <div id="hud">ABOBA</div>
+      {/* <div id="hud">scale: {scale}</div> */}
       <canvas
         onMouseDown={(e) => canvas.onMouseDown(e)}
         onMouseUp={(e) => canvas.onMouseUp()}

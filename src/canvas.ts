@@ -134,12 +134,12 @@ export default class Canvas {
   onMouseWheel(e: React.WheelEvent<HTMLElement>) {
     const { deltaY } = e;
     const scaleAmount = -deltaY / 500;
-    console.log(scaleAmount);
     const newScale = this.scale * (1 + scaleAmount);
-    if (newScale <= 1e3 || newScale >= 1e-3) {
-      this.scale = newScale;
+    if (newScale > 10 || newScale < 0.1) {
+      return;
     }
-
+    this.scale = newScale;
+    console.log(this.scale);
     // zoom the page based on where the cursor is
     var distX = e.pageX / this.canvas.clientWidth;
     var distY = e.pageY / this.canvas.clientHeight;

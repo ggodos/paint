@@ -29,6 +29,6 @@ body {
 #hud {
   position: absolute;
   /* pointer-events: none; */
-  pointer-events: visibleStroke;
+  pointer-events: none;
   color: green;
 }
