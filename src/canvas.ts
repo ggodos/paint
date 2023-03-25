@@ -121,7 +121,6 @@ export default class Canvas {
       line.draw(this.context, (a: Point) => this.toScaled(a));
     }
     if (this.isMoving) {
-      console.log(this.cursor, this.prevCursor, this.scale);
       this.offset.x += (this.cursor.x - this.prevCursor.x) / this.scale;
       this.offset.y += (this.cursor.y - this.prevCursor.y) / this.scale;
       this.render();
@@ -135,7 +134,11 @@ export default class Canvas {
   onMouseWheel(e: React.WheelEvent<HTMLElement>) {
     const { deltaY } = e;
     const scaleAmount = -deltaY / 500;
-    this.scale = this.scale * (1 + scaleAmount);
+    console.log(scaleAmount);
+    const newScale = this.scale * (1 + scaleAmount);
+    if (newScale <= 1e3 || newScale >= 1e-3) {
+      this.scale = newScale;
+    }
 
     // zoom the page based on where the cursor is
     var distX = e.pageX / this.canvas.clientWidth;

@@ -10,6 +10,7 @@ function App() {
 
   return (
     <div className="App">
+      <div id="hud">ABOBA</div>
       <canvas
         onMouseDown={(e) => canvas.onMouseDown(e)}
         onMouseUp={(e) => canvas.onMouseUp()}
