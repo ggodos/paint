@@ -1,26 +1,21 @@
-import { useEffect, useState } from "react";
-import Canvas from "./canvas";
+import { useState } from "react";
+import Paint from "./Paint";
+import UI from "./UI";
 
 function App() {
-  let canvas: Canvas;
+  let [scale, setScale] = useState(1);
 
-  useEffect(() => {
-    canvas = new Canvas();
-  }, []);
-
+  function changeScale(scale: number) {
+    setScale(scale);
+  }
   return (
     <div className="App">
-      {/* <div id="hud">scale: {scale}</div> */}
-      <canvas
-        onMouseDown={(e) => canvas.onMouseDown(e)}
-        onMouseUp={(e) => canvas.onMouseUp()}
-        onMouseOut={(e) => canvas.onMouseUp()}
-        onMouseMove={(e) => canvas.onMouseMove(e)}
-        onWheel={(e) => canvas.onMouseWheel(e)}
-        id="canvas"
-      >
-        Your browser doesn't support HTML5 Canvas
-      </canvas>
+      <UI scale={scale} />
+      <Paint
+        updateScale={changeScale}
+        height={document.body.clientWidth}
+        width={window.innerHeight}
+      />
     </div>
   );
 }
