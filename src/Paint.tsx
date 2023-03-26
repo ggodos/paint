@@ -47,12 +47,11 @@ let offset: Point = { x: 0, y: 0 };
 let scale: number = 1;
 const maxScale = 1e-50;
 const minScale = 1e50;
+let isDrawing: boolean = false;
+let isMoving: boolean = false;
 
 function Paint({ updateScale, width, height }: PaintProps) {
   const [canvasRef, ctxRef] = useCanvas();
-
-  let isDrawing: boolean = false;
-  let isMoving: boolean = false;
 
   function onWindowResize() {
     const canvas = canvasRef.current;
@@ -109,7 +108,6 @@ function Paint({ updateScale, width, height }: PaintProps) {
     // очистить
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    console.log(drawings);
     // нарисовать все фигуры
     drawings.forEach((drawing) => {
       drawing.draw(ctx, (a: Point) => toScaled(a));
@@ -177,6 +175,7 @@ function Paint({ updateScale, width, height }: PaintProps) {
     isDrawing = false;
     isMoving = false;
   }
+
   function onMouseWheel(e: React.WheelEvent<HTMLElement>) {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -210,8 +209,6 @@ function Paint({ updateScale, width, height }: PaintProps) {
 
   document.oncontextmenu = () => false;
 
-  cursor = { x: 0, y: 0 };
-  prevCursor = { x: 0, y: 0 };
   redraw();
   return (
     <canvas
