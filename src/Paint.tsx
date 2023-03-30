@@ -45,8 +45,9 @@ let cursor: Point = { x: 0, y: 0 };
 let prevCursor: Point = { x: 0, y: 0 };
 let offset: Point = { x: 0, y: 0 };
 let scale: number = 1;
-const maxScale = 1e-50;
-const minScale = 1e50;
+const maxScale = 1e-15;
+const minScale = 1e20;
+
 let isDrawing: boolean = false;
 let isMoving: boolean = false;
 
@@ -96,6 +97,13 @@ function Paint({ updateScale, width, height }: PaintProps) {
     };
   }
 
+  function trueCursor(e: React.MouseEvent<HTMLElement, MouseEvent>): Point {
+    return toTrue({
+      x: e.pageX,
+      y: e.pageY
+    })
+  }
+
   function redraw() {
     // canvas под размер окна
     const canvas = canvasRef.current;
@@ -131,7 +139,7 @@ function Paint({ updateScale, width, height }: PaintProps) {
     };
   }
 
-  function onMouseDown(e: React.MouseEvent<HTMLElement>) {
+  function onMouseDown(e: React.MouseEvent<HTMLElement, MouseEvent>) {
     e.preventDefault();
     // левая кнопка
     if (e.button == 0) {
@@ -145,27 +153,27 @@ function Paint({ updateScale, width, height }: PaintProps) {
       isMoving = true;
     }
 
-    cursor = { x: e.pageX, y: e.pageY };
-    prevCursor = { x: e.pageX, y: e.pageY };
+    cursor = trueCursor(e)
+    prevCursor = trueCursor(e)
   }
-  function onMouseMove(e: React.MouseEvent<HTMLElement>) {
+  function onMouseMove(e: React.MouseEvent<HTMLElement, MouseEvent>) {
     const canvas = canvasRef.current;
     const ctx = ctxRef.current;
     if (!canvas || !ctx) return;
 
-    cursor = { x: e.pageX, y: e.pageY };
-    const scaled = toTrue(cursor);
-    const prevScaled = toTrue(prevCursor);
+    cursor = trueCursor(e)
 
     if (isDrawing) {
-      const line = new Line(prevScaled, scaled);
+      const line = new Line(prevCursor, cursor);
       drawings.push(line);
       line.draw(ctx, (a: Point) => toScaled(a));
     }
 
+    const scaled = toScaled(cursor);
+    const prevScaled = toScaled(prevCursor);
     if (isMoving) {
-      offset.x += (cursor.x - prevCursor.x) / scale;
-      offset.y += (cursor.y - prevCursor.y) / scale;
+      offset.x += (scaled.x - prevScaled.x) / scale;
+      offset.y += (scaled.y - prevScaled.y) / scale;
       redraw();
     }
 
@@ -186,13 +194,10 @@ function Paint({ updateScale, width, height }: PaintProps) {
     if (newScale < maxScale || newScale > minScale) {
       return;
     }
-    const truePrevCursor = toTrue(prevCursor)
     setScale(newScale);
-    // zoom the page based on where the cursor is
     var distX = e.pageX / canvas.clientWidth;
     var distY = e.pageY / canvas.clientHeight;
 
-    // calculate how much we need to zoom
     const size = trueSize();
     if (!size) return;
 
@@ -205,7 +210,6 @@ function Paint({ updateScale, width, height }: PaintProps) {
     offset.x -= unitsAddLeft;
     offset.y -= unitsAddTop;
 
-    prevCursor = toScaled(truePrevCursor)
     redraw();
   }
 
