@@ -186,6 +186,7 @@ function Paint({ updateScale, width, height }: PaintProps) {
     if (newScale < maxScale || newScale > minScale) {
       return;
     }
+    const truePrevCursor = toTrue(prevCursor)
     setScale(newScale);
     // zoom the page based on where the cursor is
     var distX = e.pageX / canvas.clientWidth;
@@ -204,6 +205,7 @@ function Paint({ updateScale, width, height }: PaintProps) {
     offset.x -= unitsAddLeft;
     offset.y -= unitsAddTop;
 
+    prevCursor = toScaled(truePrevCursor)
     redraw();
   }
 
