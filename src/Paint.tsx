@@ -260,6 +260,7 @@ function Paint({ updateScale, width, height }: PaintProps) {
       if (!ctx) return;
       line.draw(ctx, (a: Point) => toScaled(a));
       prevTouches[0] = touch0;
+      return;
     }
 
     if (doubleTouch) {
@@ -269,15 +270,12 @@ function Paint({ updateScale, width, height }: PaintProps) {
         y: e.touches[1].pageY,
       };
       const prevTouch1 = prevTouches[1];
-
-      const mid = {
-        x: (touch0.x + touch1.x) / 2,
-        y: (touch0.y + touch1.y) / 2,
-      };
-      const prevMid = {
-        x: (prevTouch0.x + prevTouch1.x) / 2,
-        y: (prevTouch0.y + prevTouch1.y) / 2,
-      };
+      const calcMid = (a: Point, b: Point) => ({
+        x: (a.x + b.x) / 2,
+        y: (a.y + b.y) / 2,
+      });
+      const mid = calcMid(touch0, touch1);
+      const prevMid = calcMid(prevTouch0, prevTouch1);
 
       const dist = (a: Point, b: Point) =>
         Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
@@ -285,14 +283,13 @@ function Paint({ updateScale, width, height }: PaintProps) {
       const prevHypot = dist(prevTouch0, prevTouch1);
 
       let zoomAmount = hypot / prevHypot;
-
       const newScale = scale * zoomAmount;
-      const scaleAmount = 1 - zoomAmount;
-
       if (newScale < maxScale || newScale > minScale) {
         return;
       }
       setScale(newScale);
+
+      const scaleAmount = 1 - zoomAmount;
 
       const pan = {
         x: mid.x - prevMid.x,
