@@ -193,10 +193,6 @@ function Paint({ updateScale, width, height }: PaintProps) {
     if (isMoving) {
       offset.x += trueCursor.x - truePrevCursor.x;
       offset.y += trueCursor.y - truePrevCursor.y;
-      // offset.x += cursor.x - prevCursor.x;
-      // offset.y += cursor.y - prevCursor.y;
-      // offset.x += (scaled.x - prevScaled.x) / scale;
-      // offset.y += (scaled.y - prevScaled.y) / scale;
       redraw();
     }
 
@@ -217,6 +213,7 @@ function Paint({ updateScale, width, height }: PaintProps) {
     if (newScale < maxScale || newScale > minScale) {
       return;
     }
+    const truePrevCursor = toTrue(prevCursor);
     setScale(newScale);
     var distX = e.pageX / canvas.clientWidth;
     var distY = e.pageY / canvas.clientHeight;
@@ -233,6 +230,7 @@ function Paint({ updateScale, width, height }: PaintProps) {
     offset.x -= unitsAddLeft;
     offset.y -= unitsAddTop;
 
+    prevCursor = toScaled(truePrevCursor);
     redraw();
   }
 
