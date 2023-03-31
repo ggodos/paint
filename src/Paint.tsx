@@ -161,27 +161,42 @@ function Paint({ updateScale, width, height }: PaintProps) {
       isMoving = true;
     }
 
-    cursor = trueCursor(e);
-    prevCursor = trueCursor(e);
+    cursor = {
+      x: e.pageX,
+      y: e.pageY,
+    };
+
+    prevCursor = {
+      x: e.pageX,
+      y: e.pageY,
+    };
   }
+
   function onMouseMove(e: React.MouseEvent<HTMLElement, MouseEvent>) {
     const canvas = canvasRef.current;
     const ctx = ctxRef.current;
     if (!canvas || !ctx) return;
 
-    cursor = trueCursor(e);
+    cursor = {
+      x: e.pageX,
+      y: e.pageY,
+    };
 
+    const trueCursor = toTrue(cursor);
+    const truePrevCursor = toTrue(prevCursor);
     if (isDrawing) {
-      const line = new Line(prevCursor, cursor);
+      const line = new Line(truePrevCursor, trueCursor);
       drawings.push(line);
       line.draw(ctx, (a: Point) => toScaled(a));
     }
 
-    const scaled = toScaled(cursor);
-    const prevScaled = toScaled(prevCursor);
     if (isMoving) {
-      offset.x += (scaled.x - prevScaled.x) / scale;
-      offset.y += (scaled.y - prevScaled.y) / scale;
+      offset.x += trueCursor.x - truePrevCursor.x;
+      offset.y += trueCursor.y - truePrevCursor.y;
+      // offset.x += cursor.x - prevCursor.x;
+      // offset.y += cursor.y - prevCursor.y;
+      // offset.x += (scaled.x - prevScaled.x) / scale;
+      // offset.y += (scaled.y - prevScaled.y) / scale;
       redraw();
     }
 
