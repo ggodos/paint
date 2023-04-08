@@ -12,6 +12,11 @@ let isMoving: boolean = false;
 let singleTouch: boolean = false;
 let doubleTouch: boolean = false;
 
+const prevTouches: Array<Point> = [
+  { x: 0, y: 0 },
+  { x: 0, y: 0 },
+];
+
 // getters and setter for every variable
 export const getDrawings = (): Array<Drawing> => drawings;
 export const setDrawings = (newDrawings: Array<Drawing>): void => {
@@ -58,3 +63,33 @@ export const getDoubleTouch = (): boolean => doubleTouch;
 export const setDoubleTouch = (newDoubleTouch: boolean): void => {
   doubleTouch = newDoubleTouch;
 };
+export const getPrevTouches = (): Array<Point> => prevTouches;
+export const setPrevTouches = (newPrevTouches: Array<Point>): void => {
+  prevTouches[0] = newPrevTouches[0];
+  prevTouches[1] = newPrevTouches[1];
+};
+export function toScaled(p: Point): Point {
+  const offset = getOffset();
+  const scale = getScale();
+  return {
+    x: (p.x + offset.x) * scale,
+    y: (p.y + offset.y) * scale,
+  };
+}
+
+export function toTrue(p: Point): Point {
+  const offset = getOffset();
+  const scale = getScale();
+  return {
+    x: p.x / scale - offset.x,
+    y: p.y / scale - offset.y,
+  };
+}
+
+export function trueSize(size: Size): Size | null {
+  const scale = getScale();
+  return {
+    height: size.height / scale,
+    width: size.width / scale,
+  };
+}

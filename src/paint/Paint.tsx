@@ -12,6 +12,7 @@ import {
   getMinScale,
   getOffset,
   getPrevCursor,
+  getPrevTouches,
   getScale,
   getSingleTouch,
   setCursor,
@@ -21,44 +22,22 @@ import {
   setPrevCursor,
   setScale,
   setSingleTouch,
+  toScaled,
+  toTrue,
+  trueSize,
 } from "./shared/shared";
-
-interface Size {
-  height: number;
-  width: number;
-}
-
-class Line {
-  start: Point;
-  end: Point;
-  constructor(st: Point, end: Point) {
-    this.start = st;
-    this.end = end;
-  }
-
-  draw(ctx: CanvasRenderingContext2D, scale: (p: Point) => Point) {
-    const st = scale(this.start);
-    const ed = scale(this.end);
-    ctx.beginPath();
-    ctx.moveTo(st.x, st.y);
-    ctx.lineTo(ed.x, ed.y);
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
-}
+import Line from "../types/Drawings/Line";
 
 interface PaintProps {
   updateScale: (scale: number) => void;
 }
 
-const prevTouches: Array<Point> = [
-  { x: 0, y: 0 },
-  { x: 0, y: 0 },
-];
+let mainTool: Tool = new Brush();
+let secondTool: Tool | null = null;
 
 function Paint({ updateScale }: PaintProps) {
   const [canvasRef, ctxRef] = useCanvas();
+  mainTool.setCanvas(canvasRef.current);
 
   function onWindowResize() {
     const canvas = canvasRef.current;
@@ -76,34 +55,6 @@ function Paint({ updateScale }: PaintProps) {
   function setPaintScale(newScale: number) {
     setScale(newScale);
     updateScale(getScale());
-  }
-
-  function toScaled(p: Point): Point {
-    const offset = getOffset();
-    const scale = getScale();
-    return {
-      x: (p.x + offset.x) * scale,
-      y: (p.y + offset.y) * scale,
-    };
-  }
-
-  function toTrue(p: Point): Point {
-    const offset = getOffset();
-    const scale = getScale();
-    return {
-      x: p.x / scale - offset.x,
-      y: p.y / scale - offset.y,
-    };
-  }
-
-  function trueSize(): Size | null {
-    const canvas = canvasRef.current;
-    if (!canvas) return null;
-    const scale = getScale();
-    return {
-      height: canvas.clientHeight / scale,
-      width: canvas.clientWidth / scale,
-    };
   }
 
   function redraw() {
@@ -216,7 +167,10 @@ function Paint({ updateScale }: PaintProps) {
     var distX = e.pageX / canvas.clientWidth;
     var distY = e.pageY / canvas.clientHeight;
 
-    const size = trueSize();
+    const size = trueSize({
+      width: canvas.clientWidth,
+      height: canvas.clientHeight,
+    });
     if (!size) return;
 
     const unitsZoomedX = size.width * scaleAmount;
@@ -237,6 +191,7 @@ function Paint({ updateScale }: PaintProps) {
     e.preventDefault();
     console.log("touch start");
     const touches = e.touches;
+    const prevTouches = getPrevTouches();
     if (touches.length == 1) {
       setSingleTouch(true);
       setDoubleTouch(false);
@@ -257,6 +212,7 @@ function Paint({ updateScale }: PaintProps) {
   function onTouchMove(e: React.TouchEvent<HTMLElement>) {
     e.preventDefault();
     if (e.touches.length == 0) return;
+    const prevTouches = getPrevTouches();
     const touch0 = {
       x: e.touches[0].pageX,
       y: e.touches[0].pageY,
@@ -315,7 +271,12 @@ function Paint({ updateScale }: PaintProps) {
       offset.x += pan.x / scale;
       offset.y += pan.y / scale;
 
-      const size = trueSize();
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const size = trueSize({
+        width: canvas.clientWidth,
+        height: canvas.clientHeight,
+      });
       if (!size) return;
 
       const zoomRatio = {
