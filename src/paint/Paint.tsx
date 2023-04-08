@@ -1,19 +1,33 @@
 import React, { RefObject, useEffect, useRef } from "react";
-import useCanvas from "./hooks/useCanvas";
+import useCanvas from "../hooks/useCanvas";
+import Brush from "./tools/brush";
+import {
+  addDrawing,
+  getCursor,
+  getDoubleTouch,
+  getDrawings,
+  getIsDrawing,
+  getIsMoving,
+  getMaxScale,
+  getMinScale,
+  getOffset,
+  getPrevCursor,
+  getScale,
+  getSingleTouch,
+  setCursor,
+  setDoubleTouch,
+  setIsDrawing,
+  setIsMoving,
+  setPrevCursor,
+  setScale,
+  setSingleTouch,
+} from "./shared/shared";
 
 interface Size {
   height: number;
   width: number;
 }
 
-interface Point {
-  x: number;
-  y: number;
-}
-
-interface Drawing {
-  draw: (ctx: CanvasRenderingContext2D, scale: (p: Point) => Point) => void;
-}
 class Line {
   start: Point;
   end: Point;
@@ -36,37 +50,19 @@ class Line {
 
 interface PaintProps {
   updateScale: (scale: number) => void;
-  width: number;
-  height: number;
 }
-
-let drawings: Array<Drawing> = [];
-let cursor: Point = { x: 0, y: 0 };
-let prevCursor: Point = { x: 0, y: 0 };
-let offset: Point = { x: 0, y: 0 };
-let scale: number = 1;
-const maxScale = 1e-15;
-const minScale = 1e20;
-
-let isDrawing: boolean = false;
-let isMoving: boolean = false;
-
-let singleTouch: boolean = false;
-let doubleTouch: boolean = false;
 
 const prevTouches: Array<Point> = [
   { x: 0, y: 0 },
   { x: 0, y: 0 },
 ];
 
-function Paint({ updateScale, width, height }: PaintProps) {
+function Paint({ updateScale }: PaintProps) {
   const [canvasRef, ctxRef] = useCanvas();
 
   function onWindowResize() {
     const canvas = canvasRef.current;
     if (canvas) {
-      // canvas.width = document.body.clientWidth;
-      // canvas.height = document.body.clientHeight;
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     }
@@ -77,12 +73,14 @@ function Paint({ updateScale, width, height }: PaintProps) {
     onWindowResize();
   }, []);
 
-  function setScale(newScale: number) {
-    scale = newScale;
-    updateScale(scale);
+  function setPaintScale(newScale: number) {
+    setScale(newScale);
+    updateScale(getScale());
   }
 
   function toScaled(p: Point): Point {
+    const offset = getOffset();
+    const scale = getScale();
     return {
       x: (p.x + offset.x) * scale,
       y: (p.y + offset.y) * scale,
@@ -90,6 +88,8 @@ function Paint({ updateScale, width, height }: PaintProps) {
   }
 
   function toTrue(p: Point): Point {
+    const offset = getOffset();
+    const scale = getScale();
     return {
       x: p.x / scale - offset.x,
       y: p.y / scale - offset.y,
@@ -99,17 +99,11 @@ function Paint({ updateScale, width, height }: PaintProps) {
   function trueSize(): Size | null {
     const canvas = canvasRef.current;
     if (!canvas) return null;
+    const scale = getScale();
     return {
       height: canvas.clientHeight / scale,
       width: canvas.clientWidth / scale,
     };
-  }
-
-  function trueCursor(e: React.MouseEvent<HTMLElement, MouseEvent>): Point {
-    return toTrue({
-      x: e.pageX,
-      y: e.pageY,
-    });
   }
 
   function redraw() {
@@ -125,6 +119,7 @@ function Paint({ updateScale, width, height }: PaintProps) {
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     // нарисовать все фигуры
+    const drawings = getDrawings();
     drawings.forEach((drawing) => {
       drawing.draw(ctx, (a: Point) => toScaled(a));
     });
@@ -151,25 +146,25 @@ function Paint({ updateScale, width, height }: PaintProps) {
     e.preventDefault();
     // левая кнопка
     if (e.button == 0) {
-      isDrawing = true;
-      isMoving = false;
+      setIsDrawing(true);
+      setIsMoving(false);
     }
 
     // правая кнопка
     if (e.button == 2) {
-      isDrawing = false;
-      isMoving = true;
+      setIsDrawing(false);
+      setIsMoving(true);
     }
 
-    cursor = {
+    setCursor({
       x: e.pageX,
       y: e.pageY,
-    };
+    });
 
-    prevCursor = {
+    setPrevCursor({
       x: e.pageX,
       y: e.pageY,
-    };
+    });
   }
 
   function onMouseMove(e: React.MouseEvent<HTMLElement, MouseEvent>) {
@@ -177,30 +172,33 @@ function Paint({ updateScale, width, height }: PaintProps) {
     const ctx = ctxRef.current;
     if (!canvas || !ctx) return;
 
-    cursor = {
+    setCursor({
       x: e.pageX,
       y: e.pageY,
-    };
+    });
 
-    const trueCursor = toTrue(cursor);
-    const truePrevCursor = toTrue(prevCursor);
+    const trueCursor = toTrue(getCursor());
+    const truePrevCursor = toTrue(getPrevCursor());
+    const isDrawing = getIsDrawing();
     if (isDrawing) {
       const line = new Line(truePrevCursor, trueCursor);
-      drawings.push(line);
+      addDrawing(line);
       line.draw(ctx, (a: Point) => toScaled(a));
     }
 
+    const isMoving = getIsMoving();
     if (isMoving) {
+      const offset = getOffset();
       offset.x += trueCursor.x - truePrevCursor.x;
       offset.y += trueCursor.y - truePrevCursor.y;
       redraw();
     }
 
-    prevCursor = cursor;
+    setPrevCursor(getCursor());
   }
   function onMouseUp() {
-    isDrawing = false;
-    isMoving = false;
+    setIsDrawing(false);
+    setIsMoving(false);
   }
 
   function onMouseWheel(e: React.WheelEvent<HTMLElement>) {
@@ -209,12 +207,12 @@ function Paint({ updateScale, width, height }: PaintProps) {
 
     const { deltaY } = e;
     const scaleAmount = -deltaY / 500;
-    const newScale = scale * (1 + scaleAmount);
-    if (newScale < maxScale || newScale > minScale) {
+    const newScale = getScale() * (1 + scaleAmount);
+    if (newScale < getMaxScale() || newScale > getMinScale()) {
       return;
     }
-    const truePrevCursor = toTrue(prevCursor);
-    setScale(newScale);
+    const truePrevCursor = toTrue(getPrevCursor());
+    setPaintScale(newScale);
     var distX = e.pageX / canvas.clientWidth;
     var distY = e.pageY / canvas.clientHeight;
 
@@ -227,10 +225,11 @@ function Paint({ updateScale, width, height }: PaintProps) {
     const unitsAddLeft = unitsZoomedX * distX;
     const unitsAddTop = unitsZoomedY * distY;
 
+    const offset = getOffset();
     offset.x -= unitsAddLeft;
     offset.y -= unitsAddTop;
 
-    prevCursor = toScaled(truePrevCursor);
+    setPrevCursor(toScaled(truePrevCursor));
     redraw();
   }
 
@@ -239,19 +238,19 @@ function Paint({ updateScale, width, height }: PaintProps) {
     console.log("touch start");
     const touches = e.touches;
     if (touches.length == 1) {
-      singleTouch = true;
-      doubleTouch = false;
+      setSingleTouch(true);
+      setDoubleTouch(false);
       prevTouches[0] = { x: touches[0].pageX, y: touches[0].pageY };
     }
     if (touches.length == 2) {
-      singleTouch = false;
-      doubleTouch = true;
+      setSingleTouch(false);
+      setDoubleTouch(true);
       prevTouches[0] = { x: touches[0].pageX, y: touches[0].pageY };
       prevTouches[1] = { x: touches[1].pageX, y: touches[1].pageY };
     }
     if (touches.length > 2) {
-      singleTouch = false;
-      doubleTouch = false;
+      setSingleTouch(false);
+      setDoubleTouch(false);
     }
   }
 
@@ -264,11 +263,12 @@ function Paint({ updateScale, width, height }: PaintProps) {
     };
     const prevTouch0 = prevTouches[0];
 
+    const singleTouch = getSingleTouch();
     if (singleTouch) {
       const trueTouch0 = toTrue(touch0);
       const truePrevTouch0 = toTrue(prevTouch0);
       const line = new Line(truePrevTouch0, trueTouch0);
-      drawings.push(line);
+      addDrawing(line);
       const ctx = ctxRef.current;
       if (!ctx) return;
       line.draw(ctx, (a: Point) => toScaled(a));
@@ -276,6 +276,7 @@ function Paint({ updateScale, width, height }: PaintProps) {
       return;
     }
 
+    const doubleTouch = getDoubleTouch();
     if (doubleTouch) {
       if (e.touches.length < 2) return;
       const touch1 = {
@@ -295,12 +296,13 @@ function Paint({ updateScale, width, height }: PaintProps) {
       const hypot = dist(touch0, touch1);
       const prevHypot = dist(prevTouch0, prevTouch1);
 
+      const scale = getScale();
       let zoomAmount = hypot / prevHypot;
       const newScale = scale * zoomAmount;
-      if (newScale < maxScale || newScale > minScale) {
+      if (newScale < getMaxScale() || newScale > getMinScale()) {
         return;
       }
-      setScale(newScale);
+      setPaintScale(newScale);
 
       const scaleAmount = 1 - zoomAmount;
 
@@ -309,6 +311,7 @@ function Paint({ updateScale, width, height }: PaintProps) {
         y: mid.y - prevMid.y,
       };
 
+      const offset = getOffset();
       offset.x += pan.x / scale;
       offset.y += pan.y / scale;
 
@@ -342,8 +345,8 @@ function Paint({ updateScale, width, height }: PaintProps) {
 
   function onTouchEnd(e: React.TouchEvent<HTMLElement>) {
     e.preventDefault();
-    singleTouch = false;
-    doubleTouch = false;
+    setSingleTouch(false);
+    setDoubleTouch(false);
   }
 
   document.oncontextmenu = () => false;
@@ -353,8 +356,8 @@ function Paint({ updateScale, width, height }: PaintProps) {
     <canvas
       ref={canvasRef}
       onMouseDown={(e) => onMouseDown(e)}
-      onMouseUp={(e) => onMouseUp()}
-      onMouseOut={(e) => onMouseUp()}
+      onMouseUp={() => onMouseUp()}
+      onMouseOut={() => onMouseUp()}
       onMouseMove={(e) => onMouseMove(e)}
       onWheel={(e) => onMouseWheel(e)}
       onTouchStart={(e) => onTouchStart(e)}

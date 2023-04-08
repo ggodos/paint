@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Paint from "./Paint";
+import Paint from "./paint/Paint";
 import UI from "./UI";
 
 function App() {
@@ -11,11 +11,7 @@ function App() {
   return (
     <div className="App">
       <UI scale={scale} />
-      <Paint
-        updateScale={changeScale}
-        height={document.body.clientWidth}
-        width={window.innerHeight}
-      />
+      <Paint updateScale={changeScale} />
     </div>
   );
 }
