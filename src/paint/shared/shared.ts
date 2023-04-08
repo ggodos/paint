@@ -1,72 +1,72 @@
-let drawings: Array<Drawing> = [];
-let cursor: Point = { x: 0, y: 0 };
-let prevCursor: Point = { x: 0, y: 0 };
-let offset: Point = { x: 0, y: 0 };
-let scale: number = 1;
+let _drawings: Array<Drawing> = [];
+let _cursor: Point = { x: 0, y: 0 };
+let _prevCursor: Point = { x: 0, y: 0 };
+let _offset: Point = { x: 0, y: 0 };
+let _scale: number = 1;
 const maxScale = 1e-15;
 const minScale = 1e20;
 
-let isDrawing: boolean = false;
-let isMoving: boolean = false;
+let _isDrawing: boolean = false;
+let _isMoving: boolean = false;
 
-let singleTouch: boolean = false;
-let doubleTouch: boolean = false;
+let _singleTouch: boolean = false;
+let _doubleTouch: boolean = false;
 
-const prevTouches: Array<Point> = [
+const _prevTouches: Array<Point> = [
   { x: 0, y: 0 },
   { x: 0, y: 0 },
 ];
 
 // getters and setter for every variable
-export const getDrawings = (): Array<Drawing> => drawings;
+export const getDrawings = (): Array<Drawing> => _drawings;
 export const setDrawings = (newDrawings: Array<Drawing>): void => {
-  drawings = newDrawings;
+  _drawings = newDrawings;
 };
 // add a drawing to the array
 export const addDrawing = (drawing: Drawing): void => {
-  drawings.push(drawing);
+  _drawings.push(drawing);
 };
 
-export const getCursor = (): Point => cursor;
+export const getCursor = (): Point => _cursor;
 export const setCursor = (newCursor: Point): void => {
-  cursor = newCursor;
+  _cursor = newCursor;
 };
-export const getPrevCursor = (): Point => prevCursor;
+export const getPrevCursor = (): Point => _prevCursor;
 export const setPrevCursor = (newPrevCursor: Point): void => {
-  prevCursor = newPrevCursor;
+  _prevCursor = newPrevCursor;
 };
-export const getOffset = (): Point => offset;
+export const getOffset = (): Point => _offset;
 export const setOffset = (newOffset: Point): void => {
-  offset = newOffset;
+  _offset = newOffset;
 };
-export const getScale = (): number => scale;
+export const getScale = (): number => _scale;
 export const setScale = (newScale: number): void => {
-  scale = newScale;
+  _scale = newScale;
 };
 export const getMaxScale = (): number => maxScale;
 export const getMinScale = (): number => minScale;
 
 // getters and setter for every boolean
-export const getIsDrawing = (): boolean => isDrawing;
+export const getIsDrawing = (): boolean => _isDrawing;
 export const setIsDrawing = (newIsDrawing: boolean): void => {
-  isDrawing = newIsDrawing;
+  _isDrawing = newIsDrawing;
 };
-export const getIsMoving = (): boolean => isMoving;
+export const getIsMoving = (): boolean => _isMoving;
 export const setIsMoving = (newIsMoving: boolean): void => {
-  isMoving = newIsMoving;
+  _isMoving = newIsMoving;
 };
-export const getSingleTouch = (): boolean => singleTouch;
+export const getSingleTouch = (): boolean => _singleTouch;
 export const setSingleTouch = (newSingleTouch: boolean): void => {
-  singleTouch = newSingleTouch;
+  _singleTouch = newSingleTouch;
 };
-export const getDoubleTouch = (): boolean => doubleTouch;
+export const getDoubleTouch = (): boolean => _doubleTouch;
 export const setDoubleTouch = (newDoubleTouch: boolean): void => {
-  doubleTouch = newDoubleTouch;
+  _doubleTouch = newDoubleTouch;
 };
-export const getPrevTouches = (): Array<Point> => prevTouches;
+export const getPrevTouches = (): Array<Point> => _prevTouches;
 export const setPrevTouches = (newPrevTouches: Array<Point>): void => {
-  prevTouches[0] = newPrevTouches[0];
-  prevTouches[1] = newPrevTouches[1];
+  _prevTouches[0] = newPrevTouches[0];
+  _prevTouches[1] = newPrevTouches[1];
 };
 export function toScaled(p: Point): Point {
   const offset = getOffset();

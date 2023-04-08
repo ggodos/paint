@@ -1,17 +1,19 @@
 import { useState } from "react";
 import Paint from "./paint/Paint";
 import UI from "./UI";
+import { getScale } from "./paint/shared/shared";
 
 function App() {
-  let [scale, setScale] = useState(1);
+  let [uiScale, setUIScale] = useState(getScale());
 
-  function changeScale(scale: number) {
-    setScale(scale);
+  function updateScale(newScale: number) {
+    setUIScale(newScale);
   }
+
   return (
     <div className="App">
-      <UI scale={scale} />
-      <Paint updateScale={changeScale} />
+      <UI scale={uiScale} />
+      <Paint updateScale={updateScale} />
     </div>
   );
 }
