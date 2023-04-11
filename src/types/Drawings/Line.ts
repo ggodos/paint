@@ -1,6 +1,4 @@
-import { Point } from "../Point";
-
-export class Line {
+class Line {
   start: Point;
   end: Point;
   constructor(st: Point, end: Point) {

@@ -33,10 +33,8 @@ import {
   toTrue,
   trueSize,
 } from "./shared/shared";
-import Line from "../types/Drawings/Line";
 import Tool from "./tools/Tool";
 import MoveTool from "./tools/MoveTool";
-import { Point } from "../types/Point";
 
 interface PaintProps {
   updateScale: (scale: number) => void;

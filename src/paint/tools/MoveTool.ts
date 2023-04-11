@@ -1,4 +1,3 @@
-import { Point } from "../../types/Point";
 import {
   getCursor,
   getMaxScale,
@@ -6,9 +5,12 @@ import {
   getOffset,
   getPrevCursor,
   getPrevTouches,
+  getPrevTrueMid,
   getScale,
   setPrevTouches,
+  setPrevTrueMid,
   setScale,
+  toScaled,
   toTrue,
   trueSize,
 } from "../shared/shared";
@@ -71,8 +73,8 @@ class MoveTool extends Tool {
     const minScale = getMinScale();
     var zoom = dist2 / dist1;
     var newScale = scale * zoom;
-    // setScale(newScale);
-    // if (updateUIScale) updateUIScale(newScale);
+    setScale(newScale);
+    if (updateUIScale) updateUIScale(newScale);
     // const newScale = scale * (zoomScale / dist1);
 
     // try
@@ -88,11 +90,19 @@ class MoveTool extends Tool {
     // offset.y = canvasMid.y;
 
     // change offset whem change midpoint
-    const mid1 = calcMid(prevT1, prevT2);
-    const mid2 = calcMid(t1, t2);
-    offset.x += mid2.x - mid1.x;
-    offset.y += mid2.y - mid1.y;
+    const prevPointsMid = calcMid(prevT1, prevT2);
+    const currentMid = calcMid(t1, t2);
+    // offset.x += currentMid.x - prevPointsMid.x;
+    // offset.y += currentMid.y - prevPointsMid.y;
 
+    const prevTrueMid = getPrevTrueMid();
+    if (prevTrueMid) {
+      const prevMid = toScaled(prevTrueMid);
+      offset.x -= prevMid.x - currentMid.x;
+      offset.y -= prevMid.y - currentMid.y;
+    }
+
+    setPrevTrueMid(toTrue(currentMid));
     setPrevTouches([t1, t2]);
   }
 }

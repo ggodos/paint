@@ -1,10 +1,7 @@
-import { Drawing } from "../../types/Drawings/Drawing";
-import { Point } from "../../types/Point";
-import { Size } from "../../types/Size";
-
 let _drawings: Array<Drawing> = [];
 let _cursor: Point = { x: 0, y: 0 };
 let _prevCursor: Point = { x: 0, y: 0 };
+let _prevTrueMid: Point | null = null;
 let _offset: Point = { x: 0, y: 0 };
 let _scale: number = 1;
 const maxScale = 1e-15;
@@ -38,6 +35,10 @@ export const setCursor = (newCursor: Point): void => {
 export const getPrevCursor = (): Point => _prevCursor;
 export const setPrevCursor = (newPrevCursor: Point): void => {
   _prevCursor = newPrevCursor;
+};
+export const getPrevTrueMid = (): Point | null => _prevTrueMid;
+export const setPrevTrueMid = (newPrevTrueMid: Point | null): void => {
+  _prevTrueMid = newPrevTrueMid;
 };
 export const getOffset = (): Point => _offset;
 export const setOffset = (newOffset: Point): void => {
