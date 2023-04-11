@@ -1,3 +1,4 @@
+import { Point } from "../../types/Point";
 import {
   getCursor,
   getMaxScale,
@@ -6,6 +7,7 @@ import {
   getPrevCursor,
   getPrevTouches,
   getScale,
+  setPrevTouches,
   setScale,
   toTrue,
   trueSize,
@@ -28,79 +30,70 @@ class MoveTool extends Tool {
     e: React.TouchEvent<HTMLCanvasElement>,
     updateUIScale?: (newScale: number) => void
   ): void {
-    if (e.touches.length < 2) return;
+    e.preventDefault();
+    if (e.touches.length < 2 || !this.canvas || !this.ctx) return;
     const prevTouches = getPrevTouches();
-    const touch0 = {
+    const t1 = {
       x: e.touches[0].pageX,
       y: e.touches[0].pageY,
     };
-    const prevTouch0 = prevTouches[0];
-    const touch1 = {
+    // const prevTouch0 = prevTouches[0];
+    const t2 = {
       x: e.touches[1].pageX,
       y: e.touches[1].pageY,
     };
-    const prevTouch1 = prevTouches[1];
+    const prevT1 = {
+      x: prevTouches[0].x,
+      y: prevTouches[0].y,
+    };
+    const prevT2 = {
+      x: prevTouches[1].x,
+      y: prevTouches[1].y,
+    };
+
+    // var zoomScale = Math.sqrt(
+    //   Math.pow(t1.x - t2.x, 2) + Math.pow(t1.y - t2.y, 2)
+    // );
     const calcMid = (a: Point, b: Point) => ({
       x: (a.x + b.x) / 2,
       y: (a.y + b.y) / 2,
     });
-    const mid = calcMid(touch0, touch1);
-    const prevMid = calcMid(prevTouch0, prevTouch1);
 
-    const dist = (a: Point, b: Point) =>
-      Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
-    const hypot = dist(touch0, touch1);
-    const prevHypot = dist(prevTouch0, prevTouch1);
-
+    // zoom
+    const dist1 = Math.sqrt(
+      Math.pow(prevT1.x - prevT2.x, 2) + Math.pow(prevT1.y - prevT2.y, 2)
+    );
+    const dist2 = Math.sqrt(
+      Math.pow(t1.x - t2.x, 2) + Math.pow(t1.y - t2.y, 2)
+    );
     const scale = getScale();
-    let zoomAmount = hypot / prevHypot;
-    const newScale = scale * zoomAmount;
-    if (newScale < getMaxScale() || newScale > getMinScale()) {
-      return;
-    }
-    setScale(newScale);
-    if (updateUIScale) updateUIScale(newScale);
+    const maxScale = getMaxScale();
+    const minScale = getMinScale();
+    var zoom = dist2 / dist1;
+    var newScale = scale * zoom;
+    // setScale(newScale);
+    // if (updateUIScale) updateUIScale(newScale);
+    // const newScale = scale * (zoomScale / dist1);
 
-    const scaleAmount = 1 - zoomAmount;
-
-    const pan = {
-      x: mid.x - prevMid.x,
-      y: mid.y - prevMid.y,
-    };
-
+    // try
     const offset = getOffset();
-    offset.x += pan.x / scale;
-    offset.y += pan.y / scale;
-
-    if (!this.canvas) return;
-    const size = trueSize({
-      width: this.canvas.clientWidth,
-      height: this.canvas.clientHeight,
+    // get canvas size
+    const canvasSize = trueSize(this.canvas);
+    // get midpoint
+    const canvasMid = calcMid(offset, {
+      x: offset.x + canvasSize.width,
+      y: offset.y + canvasSize.height,
     });
-    if (!size) return;
+    // offset.x = canvasMid.x;
+    // offset.y = canvasMid.y;
 
-    const zoomRatio = {
-      x: mid.x / size.width,
-      y: mid.y / size.height,
-    };
+    // change offset whem change midpoint
+    const mid1 = calcMid(prevT1, prevT2);
+    const mid2 = calcMid(t1, t2);
+    offset.x += mid2.x - mid1.x;
+    offset.y += mid2.y - mid1.y;
 
-    const unitsZoomed = {
-      x: size.width * scaleAmount,
-      y: size.height * scaleAmount,
-    };
-
-    const unitsAdd = {
-      left: unitsZoomed.x * zoomRatio.x,
-      top: unitsZoomed.y * zoomRatio.y,
-    };
-
-    offset.x += unitsAdd.left;
-    offset.y += unitsAdd.top;
-
-    prevTouches[0] = touch0;
-    prevTouches[1] = touch1;
-
-    // redraw();
+    setPrevTouches([t1, t2]);
   }
 }
 

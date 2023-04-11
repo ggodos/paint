@@ -1,3 +1,7 @@
+import { Drawing } from "../../types/Drawings/Drawing";
+import { Point } from "../../types/Point";
+import { Size } from "../../types/Size";
+
 let _drawings: Array<Drawing> = [];
 let _cursor: Point = { x: 0, y: 0 };
 let _prevCursor: Point = { x: 0, y: 0 };
@@ -86,7 +90,7 @@ export function toTrue(p: Point): Point {
   };
 }
 
-export function trueSize(size: Size): Size | null {
+export function trueSize(size: Size): Size {
   const scale = getScale();
   return {
     height: size.height / scale,

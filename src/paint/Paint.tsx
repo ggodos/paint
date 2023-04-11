@@ -1,4 +1,11 @@
-import React, { RefObject, useCallback, useEffect, useRef } from "react";
+import React, {
+  RefObject,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import useCanvas from "../hooks/useCanvas";
 import Brush from "./tools/brush";
 import {
@@ -29,6 +36,7 @@ import {
 import Line from "../types/Drawings/Line";
 import Tool from "./tools/Tool";
 import MoveTool from "./tools/MoveTool";
+import { Point } from "../types/Point";
 
 interface PaintProps {
   updateScale: (scale: number) => void;
@@ -117,6 +125,7 @@ function Paint({ updateScale }: PaintProps) {
   }
 
   function onMouseMove(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
+    e.preventDefault();
     const canvas = canvasRef.current;
     const ctx = ctxRef.current;
     if (!canvas || !ctx) return;
@@ -250,4 +259,4 @@ function Paint({ updateScale }: PaintProps) {
   );
 }
 
-export default Paint;
+export default memo(Paint);

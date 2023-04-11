@@ -1,4 +1,5 @@
 import Line from "../../types/Drawings/Line";
+import { Point } from "../../types/Point";
 import {
   setCursor,
   setPrevCursor,
