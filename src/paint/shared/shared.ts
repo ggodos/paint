@@ -1,8 +1,10 @@
+import Vector2 from "types/Vector2";
+
 let _drawings: Array<Drawing> = [];
-let _cursor: Point = { x: 0, y: 0 };
-let _prevCursor: Point = { x: 0, y: 0 };
-let _prevTrueMid: Point | null = null;
-let _offset: Point = { x: 0, y: 0 };
+let _cursor: Vector2 = Vector2.zero();
+let _prevCursor: Vector2 = Vector2.zero();
+let _prevTrueMid: Vector2 | null = null;
+let _offset: Vector2 = Vector2.zero();
 let _scale: number = 1;
 const maxScale = 1e-15;
 const minScale = 1e20;
@@ -13,10 +15,7 @@ let _isMoving: boolean = false;
 let _singleTouch: boolean = false;
 let _doubleTouch: boolean = false;
 
-const _prevTouches: Array<Point> = [
-  { x: 0, y: 0 },
-  { x: 0, y: 0 },
-];
+const _prevTouches: Array<Vector2> = [Vector2.zero(), Vector2.zero()];
 
 // getters and setter for every variable
 export const getDrawings = (): Array<Drawing> => _drawings;
@@ -28,20 +27,20 @@ export const addDrawing = (drawing: Drawing): void => {
   _drawings.push(drawing);
 };
 
-export const getCursor = (): Point => _cursor;
-export const setCursor = (newCursor: Point): void => {
+export const getCursor = (): Vector2 => _cursor;
+export const setCursor = (newCursor: Vector2): void => {
   _cursor = newCursor;
 };
-export const getPrevCursor = (): Point => _prevCursor;
-export const setPrevCursor = (newPrevCursor: Point): void => {
+export const getPrevCursor = (): Vector2 => _prevCursor;
+export const setPrevCursor = (newPrevCursor: Vector2): void => {
   _prevCursor = newPrevCursor;
 };
-export const getPrevTrueMid = (): Point | null => _prevTrueMid;
-export const setPrevTrueMid = (newPrevTrueMid: Point | null): void => {
+export const getPrevTrueMid = (): Vector2 | null => _prevTrueMid;
+export const setPrevTrueMid = (newPrevTrueMid: Vector2 | null): void => {
   _prevTrueMid = newPrevTrueMid;
 };
-export const getOffset = (): Point => _offset;
-export const setOffset = (newOffset: Point): void => {
+export const getOffset = (): Vector2 => _offset;
+export const setOffset = (newOffset: Vector2): void => {
   _offset = newOffset;
 };
 export const getScale = (): number => _scale;
@@ -68,27 +67,21 @@ export const getDoubleTouch = (): boolean => _doubleTouch;
 export const setDoubleTouch = (newDoubleTouch: boolean): void => {
   _doubleTouch = newDoubleTouch;
 };
-export const getPrevTouches = (): Array<Point> => _prevTouches;
-export const setPrevTouches = (newPrevTouches: Array<Point>): void => {
+export const getPrevTouches = (): Array<Vector2> => _prevTouches;
+export const setPrevTouches = (newPrevTouches: Array<Vector2>): void => {
   _prevTouches[0] = newPrevTouches[0];
   _prevTouches[1] = newPrevTouches[1];
 };
-export function toScaled(p: Point): Point {
+export function toScaled(p: Vector2): Vector2 {
   const offset = getOffset();
   const scale = getScale();
-  return {
-    x: (p.x + offset.x) * scale,
-    y: (p.y + offset.y) * scale,
-  };
+  return offset.add(p).mult(scale);
 }
 
-export function toTrue(p: Point): Point {
+export function toTrue(p: Vector2): Vector2 {
   const offset = getOffset();
   const scale = getScale();
-  return {
-    x: p.x / scale - offset.x,
-    y: p.y / scale - offset.y,
-  };
+  return p.div(scale).sub(offset);
 }
 
 export function trueSize(size: Size): Size {

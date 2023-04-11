@@ -1,12 +1,14 @@
+import Vector2 from "types/Vector2";
+
 class Line {
-  start: Point;
-  end: Point;
-  constructor(st: Point, end: Point) {
+  start: Vector2;
+  end: Vector2;
+  constructor(st: Vector2, end: Vector2) {
     this.start = st;
     this.end = end;
   }
 
-  draw(ctx: CanvasRenderingContext2D, scale: (p: Point) => Point) {
+  draw(ctx: CanvasRenderingContext2D, scale: (p: Vector2) => Vector2) {
     const st = scale(this.start);
     const ed = scale(this.end);
     ctx.beginPath();

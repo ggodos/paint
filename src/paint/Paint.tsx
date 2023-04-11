@@ -35,6 +35,7 @@ import {
 } from "./shared/shared";
 import Tool from "./tools/Tool";
 import MoveTool from "./tools/MoveTool";
+import Vector2 from "types/Vector2";
 
 interface PaintProps {
   updateScale: (scale: number) => void;
@@ -76,8 +77,9 @@ function Paint({ updateScale }: PaintProps) {
     // нарисовать все фигуры
     const drawings = getDrawings();
     drawings.forEach((drawing) => {
-      drawing.draw(ctx, (a: Point) => toScaled(a));
+      drawing.draw(ctx, (a: Vector2) => toScaled(a));
     });
+    const offset = getOffset();
   }
 
   function saveImage() {
@@ -111,15 +113,8 @@ function Paint({ updateScale }: PaintProps) {
       setIsMoving(true);
     }
 
-    setCursor({
-      x: e.pageX,
-      y: e.pageY,
-    });
-
-    setPrevCursor({
-      x: e.pageX,
-      y: e.pageY,
-    });
+    setCursor(new Vector2(e.pageX, e.pageY));
+    setPrevCursor(new Vector2(e.pageX, e.pageY));
   }
 
   function onMouseMove(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
@@ -128,10 +123,7 @@ function Paint({ updateScale }: PaintProps) {
     const ctx = ctxRef.current;
     if (!canvas || !ctx) return;
 
-    setCursor({
-      x: e.pageX,
-      y: e.pageY,
-    });
+    setCursor(new Vector2(e.pageX, e.pageY));
 
     const isDrawing = getIsDrawing();
     if (isDrawing) {
@@ -194,13 +186,13 @@ function Paint({ updateScale }: PaintProps) {
     if (touches.length == 1) {
       setSingleTouch(true);
       setDoubleTouch(false);
-      prevTouches[0] = { x: touches[0].pageX, y: touches[0].pageY };
+      prevTouches[0] = new Vector2(touches[0].pageX, touches[0].pageY);
     }
     if (touches.length == 2) {
       setSingleTouch(false);
       setDoubleTouch(true);
-      prevTouches[0] = { x: touches[0].pageX, y: touches[0].pageY };
-      prevTouches[1] = { x: touches[1].pageX, y: touches[1].pageY };
+      prevTouches[0] = new Vector2(touches[0].pageX, touches[0].pageY);
+      prevTouches[1] = new Vector2(touches[1].pageX, touches[1].pageY);
     }
     if (touches.length > 2) {
       setSingleTouch(false);
