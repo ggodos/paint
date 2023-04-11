@@ -1,3 +1,4 @@
+import { Drawing } from "types/Drawings/Drawing";
 import Vector2 from "types/Vector2";
 
 let _drawings: Array<Drawing> = [];
@@ -75,13 +76,13 @@ export const setPrevTouches = (newPrevTouches: Array<Vector2>): void => {
 export function toScaled(p: Vector2): Vector2 {
   const offset = getOffset();
   const scale = getScale();
-  return offset.add(p).mult(scale);
+  return offset.add(p).multiply(scale);
 }
 
 export function toTrue(p: Vector2): Vector2 {
   const offset = getOffset();
   const scale = getScale();
-  return p.div(scale).sub(offset);
+  return p.divide(scale).sub(offset);
 }
 
 export function trueSize(size: Size): Size {
@@ -90,4 +91,34 @@ export function trueSize(size: Size): Size {
     height: size.height / scale,
     width: size.width / scale,
   };
+}
+
+export function zoomBy(
+  canvas: HTMLCanvasElement,
+  scaleAmount: number,
+  p: Vector2,
+  updateUIScale?: (newScale: number) => void
+): void {
+  const newScale = getScale() * (1 + scaleAmount);
+  if (newScale < getMaxScale() || newScale > getMinScale()) {
+    return;
+  }
+
+  setScale(newScale);
+  if (updateUIScale) updateUIScale(newScale);
+  const dist = new Vector2(p.x / canvas.clientWidth, p.y / canvas.clientHeight);
+  const size = trueSize({
+    width: canvas.clientWidth,
+    height: canvas.clientHeight,
+  });
+
+  const unitsZoomed = new Vector2(
+    size.width * scaleAmount,
+    size.height * scaleAmount
+  );
+
+  const unitsSub = new Vector2(unitsZoomed.x * dist.x, unitsZoomed.y * dist.y);
+
+  const offset = getOffset();
+  offset.selfSub(unitsSub);
 }

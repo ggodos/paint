@@ -32,6 +32,7 @@ import {
   toScaled,
   toTrue,
   trueSize,
+  zoomBy,
 } from "./shared/shared";
 import Tool from "./tools/Tool";
 import MoveTool from "./tools/MoveTool";
@@ -149,38 +150,11 @@ function Paint({ updateScale }: PaintProps) {
 
     const { deltaY } = e;
     const scaleAmount = -deltaY / 500;
-    const newScale = getScale() * (1 + scaleAmount);
-    if (newScale < getMaxScale() || newScale > getMinScale()) {
-      return;
-    }
-    const truePrevCursor = toTrue(getPrevCursor());
-    setScale(newScale);
-    updateScale(newScale);
-    var distX = e.pageX / canvas.clientWidth;
-    var distY = e.pageY / canvas.clientHeight;
-
-    const size = trueSize({
-      width: canvas.clientWidth,
-      height: canvas.clientHeight,
-    });
-    if (!size) return;
-
-    const unitsZoomedX = size.width * scaleAmount;
-    const unitsZoomedY = size.height * scaleAmount;
-
-    const unitsAddLeft = unitsZoomedX * distX;
-    const unitsAddTop = unitsZoomedY * distY;
-
-    const offset = getOffset();
-    offset.x -= unitsAddLeft;
-    offset.y -= unitsAddTop;
-
-    setPrevCursor(toScaled(truePrevCursor));
+    zoomBy(canvas, scaleAmount, new Vector2(e.pageX, e.pageY), updateScale);
     redraw();
   }
 
-  function onTouchStart(e: React.TouchEvent<HTMLElement>) {
-    e.preventDefault();
+  function onTouchStart(e: React.TouchEvent<HTMLCanvasElement>) {
     const touches = e.touches;
     const prevTouches = getPrevTouches();
     if (touches.length == 1) {
@@ -191,6 +165,7 @@ function Paint({ updateScale }: PaintProps) {
     if (touches.length == 2) {
       setSingleTouch(false);
       setDoubleTouch(true);
+      moveTool.onTouchStart(e);
       prevTouches[0] = new Vector2(touches[0].pageX, touches[0].pageY);
       prevTouches[1] = new Vector2(touches[1].pageX, touches[1].pageY);
     }
@@ -205,7 +180,6 @@ function Paint({ updateScale }: PaintProps) {
   }
 
   function onTouchMove(e: React.TouchEvent<HTMLCanvasElement>) {
-    e.preventDefault();
     if (e.touches.length == 0) return;
 
     const singleTouch = getSingleTouch();
@@ -223,7 +197,6 @@ function Paint({ updateScale }: PaintProps) {
   }
 
   function onTouchEnd(e: React.TouchEvent<HTMLElement>) {
-    e.preventDefault();
     setSingleTouch(false);
     setDoubleTouch(false);
   }

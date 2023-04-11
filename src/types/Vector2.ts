@@ -23,7 +23,7 @@ class Vector2 {
     this.y -= other.y;
   }
 
-  mult(scalar: number): Vector2 {
+  multiply(scalar: number): Vector2 {
     return new Vector2(this.x * scalar, this.y * scalar);
   }
 
@@ -32,7 +32,7 @@ class Vector2 {
     this.y *= scalar;
   }
 
-  div(scalar: number): Vector2 {
+  divide(scalar: number): Vector2 {
     return new Vector2(this.x / scalar, this.y / scalar);
   }
 
@@ -68,7 +68,7 @@ class Vector2 {
       return Vector2.zero();
     }
     const scalar = this.dot(other) / (mag * mag);
-    return other.normalize().mult(scalar);
+    return other.normalize().multiply(scalar);
   }
 
   angleTo(other: Vector2): number {
