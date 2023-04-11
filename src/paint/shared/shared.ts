@@ -1,7 +1,8 @@
-import { Drawing } from "types/Drawings/Drawing";
+import { Figure } from "types/Drawings/Figure";
 import Vector2 from "types/Vector2";
 
-let _drawings: Array<Drawing> = [];
+let _drawings: Array<Figure> = [];
+let redoDrawings: Array<Figure> = [];
 let _cursor: Vector2 = Vector2.zero();
 let _prevCursor: Vector2 = Vector2.zero();
 let _prevTrueMid: Vector2 | null = null;
@@ -19,13 +20,14 @@ let _doubleTouch: boolean = false;
 const _prevTouches: Array<Vector2> = [Vector2.zero(), Vector2.zero()];
 
 // getters and setter for every variable
-export const getDrawings = (): Array<Drawing> => _drawings;
-export const setDrawings = (newDrawings: Array<Drawing>): void => {
+export const getDrawings = (): Array<Figure> => _drawings;
+export const setDrawings = (newDrawings: Array<Figure>): void => {
   _drawings = newDrawings;
 };
 // add a drawing to the array
-export const addDrawing = (drawing: Drawing): void => {
+export const addDrawing = (drawing: Figure): void => {
   _drawings.push(drawing);
+  redoDrawings = [];
 };
 
 export const getCursor = (): Vector2 => _cursor;
@@ -121,4 +123,17 @@ export function zoomBy(
 
   const offset = getOffset();
   offset.selfSub(unitsSub);
+}
+
+export function undo() {
+  const drawings = getDrawings();
+  if (drawings.length > 0) {
+    redoDrawings.push(drawings.pop() as Figure);
+  }
+}
+
+export function redo() {
+  if (redoDrawings.length > 0) {
+    _drawings.push(redoDrawings.pop() as Figure);
+  }
 }

@@ -8,9 +8,10 @@ class Tool {
     this.canvas = canvas;
     this.ctx = canvas?.getContext("2d") || null;
   }
-  onMoveStart(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {}
+  onMouseStart(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {}
+  onMouseEnd(): void {}
   onTouchStart(e: React.TouchEvent<HTMLCanvasElement>): void {}
-  onEnd(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {}
+  onTouchEnd(): void {}
   onMouseMove(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {}
   onTouchMove(
     e: React.TouchEvent<HTMLCanvasElement>,

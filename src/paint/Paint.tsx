@@ -22,6 +22,7 @@ import {
   getPrevTouches,
   getScale,
   getSingleTouch,
+  redo,
   setCursor,
   setDoubleTouch,
   setIsDrawing,
@@ -32,6 +33,7 @@ import {
   toScaled,
   toTrue,
   trueSize,
+  undo,
   zoomBy,
 } from "./shared/shared";
 import Tool from "./tools/Tool";
@@ -56,11 +58,30 @@ function Paint({ updateScale }: PaintProps) {
     }
   }
 
+  function keyboardHandler(e: KeyboardEvent) {
+    const ctrl = e.ctrlKey;
+    const shift = e.shiftKey;
+    const key = e.key.toLocaleLowerCase();
+    if (ctrl && !shift && key == "z") {
+      undo();
+      redraw();
+    }
+
+    if (ctrl && shift && key == "z") {
+      redo();
+      redraw();
+    }
+  }
+
   useEffect(() => {
     window.addEventListener("resize", onWindowResize);
     drawTool.setCanvas(canvasRef.current);
     moveTool.setCanvas(canvasRef.current);
+    document.addEventListener("keydown", keyboardHandler);
     onWindowResize();
+    return () => {
+      document.removeEventListener("keydown", keyboardHandler);
+    };
   }, []);
 
   function redraw() {
@@ -96,20 +117,21 @@ function Paint({ updateScale }: PaintProps) {
 
       ctx.drawImage(img, 0, 0);
       const cachedImage = canvas.toDataURL();
-      // console.log(cachedImage);
     };
   }
 
-  function onMouseDown(e: React.MouseEvent<HTMLElement, MouseEvent>) {
+  function onMouseDown(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
     e.preventDefault();
     // левая кнопка
     if (e.button == 0) {
+      drawTool.onMouseStart(e);
       setIsDrawing(true);
       setIsMoving(false);
     }
 
     // правая кнопка
     if (e.button == 2) {
+      moveTool.onMouseStart(e);
       setIsDrawing(false);
       setIsMoving(true);
     }
@@ -140,6 +162,12 @@ function Paint({ updateScale }: PaintProps) {
     setPrevCursor(getCursor());
   }
   function onMouseUp() {
+    if (getIsDrawing()) {
+      drawTool.onMouseEnd();
+    }
+    if (getIsMoving()) {
+      moveTool.onMouseEnd();
+    }
     setIsDrawing(false);
     setIsMoving(false);
   }

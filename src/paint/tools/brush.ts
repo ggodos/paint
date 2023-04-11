@@ -22,21 +22,26 @@ import {
   setScale,
 } from "../shared/shared";
 import Tool from "./Tool";
+import { Drawing } from "types/Drawings/Drawing";
 
 class Brush extends Tool {
   name: string = "Brush";
   description: string = "Draw with a brush";
   icon: string = "brush";
+  currentDrawing: Drawing = new Drawing([]);
   onMouseMove(e: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     if (!this.canvas || !this.ctx) return;
 
     const trueCursor = toTrue(getCursor());
     const truePrevCursor = toTrue(getPrevCursor());
-    console.log(e.pageX, e.pageY);
 
     const line = new Line(truePrevCursor, trueCursor);
-    addDrawing(line);
+    this.currentDrawing.addFigure(line);
     line.draw(this.ctx, (a: Vector2) => toScaled(a));
+  }
+  onMouseEnd(): void {
+    addDrawing(this.currentDrawing);
+    this.currentDrawing = new Drawing([]);
   }
   onTouchMove(e: React.TouchEvent<HTMLCanvasElement>): void {
     const prevTouches = getPrevTouches();
